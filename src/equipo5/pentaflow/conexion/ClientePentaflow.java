@@ -8,34 +8,26 @@ import java.time.LocalDate;
 
 public class ClientePentaflow {
     public static void main(String[] args) {
-        // Producto sugerido: Bomba Hidráulica
-        Producto p = new Producto("BOM005", "Bomba Centrifuga de Lodos 5HP", 12450.50, 3, "Pentaflow-Engineers", LocalDate.now());
+        Producto p = new Producto("BOM005", "Bomba Centrifuga 5HP", 12450.5, 3, "Pentaflow", LocalDate.now());
 
         try (Socket s = new Socket("localhost", 5000); DataOutputStream out = new DataOutputStream(s.getOutputStream())) {
-            
-            System.out.println(">>> ENVIANDO ACTIVOS AL MONITOR PENTAFLOW...");
+            // 1. Cadena
+            enviar(out, 1, p.aCadena().getBytes());
+            // 2. Binario Fijo
+            enviar(out, 2, p.aBinarioFijo());
+            // 3. XML
+            enviar(out, 3, Files.readAllBytes(Paths.get("resources/esquemas/producto.xml")));
+            // 4. Protobuf
+            enviar(out, 4, p.aProtobuf());
 
-            // 1. Envío Cadena
-            byte[] cad = p.aCadena().getBytes();
-            enviarPaquete(out, 1, cad);
-
-            // 2. Envío Binario
-            byte[] bin = p.aBinario();
-            enviarPaquete(out, 2, bin);
-
-            // 3. Envío XML (Ejercicio 4)
-            byte[] xml = Files.readAllBytes(Paths.get("resources/esquemas/producto.xml"));
-            enviarPaquete(out, 3, xml);
-
-            System.out.println(">>> Procesos terminados.");
-
-        } catch (IOException e) { e.printStackTrace(); }
+            System.out.println(">>> Todos los esquemas de Pentaflow enviados.");
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    private static void enviarPaquete(DataOutputStream out, int tipo, byte[] datos) throws IOException {
+    private static void enviar(DataOutputStream out, int tipo, byte[] data) throws IOException {
         out.writeInt(tipo);
-        out.writeInt(datos.length);
-        out.write(datos);
+        out.writeInt(data.length);
+        out.write(data);
         out.flush();
     }
 }

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package equipo5.pentaflow;
+
+// Define dónde se generará el código (opcional en simulaciones)
+option java_package = "equipo5.pentaflow.modelos";
+option java_outer_classname = "ProductoProto";
+
+message Producto {
+  string clave = 1;
+  string nombre = 2;
+  double precio = 3;
+  int32 cantidad = 4;
+  string marca = 5;
+  int64 fechaReg = 6;
+}

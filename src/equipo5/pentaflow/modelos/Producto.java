@@ -1,5 +1,6 @@
 package equipo5.pentaflow.modelos;
 
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -20,27 +21,40 @@ public class Producto {
         this.fechaReg = fechaReg;
     }
 
-    // Formato Cadena para Ejercicio 3
+    // EJERCICIO 3: Formato Cadena
     public String aCadena() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return String.join("|", clave, nombre, String.valueOf(precio), 
                            String.valueOf(cantidad), marca, fechaReg.format(dtf));
     }
 
-    // Formato Binario para Ejercicio 3 (Longitud fija: 86 bytes)
-    public byte[] aBinario() {
+    // EJERCICIO 3: Formato Binario Fijo (86 bytes)
+    public byte[] aBinarioFijo() {
         ByteBuffer buffer = ByteBuffer.allocate(86);
-        buffer.put(ajustarTexto(clave, 6).getBytes());
-        buffer.put(ajustarTexto(nombre, 30).getBytes());
+        buffer.put(ajustar(clave, 6).getBytes());
+        buffer.put(ajustar(nombre, 30).getBytes());
         buffer.putDouble(precio);
         buffer.putInt(cantidad);
-        buffer.put(ajustarTexto(marca, 30).getBytes());
+        buffer.put(ajustar(marca, 30).getBytes());
         buffer.putLong(fechaReg.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
         return buffer.array();
     }
 
-    private String ajustarTexto(String texto, int longitud) {
-        if (texto.length() > longitud) return texto.substring(0, longitud);
-        return String.format("%-" + longitud + "s", texto);
+    // EJERCICIO 5: Simulación Protobuf (Binario Estructurado con Tags)
+    public byte[] aProtobuf() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (DataOutputStream dos = new DataOutputStream(baos)) {
+            dos.writeByte(1); dos.writeUTF(clave);
+            dos.writeByte(2); dos.writeUTF(nombre);
+            dos.writeByte(3); dos.writeDouble(precio);
+            dos.writeByte(4); dos.writeInt(cantidad);
+            dos.writeByte(5); dos.writeUTF(marca);
+            dos.writeByte(6); dos.writeLong(fechaReg.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
+        } catch (IOException e) { e.printStackTrace(); }
+        return baos.toByteArray();
+    }
+
+    private String ajustar(String t, int l) {
+        return (t.length() > l) ? t.substring(0, l) : String.format("%-" + l + "s", t);
     }
 }
