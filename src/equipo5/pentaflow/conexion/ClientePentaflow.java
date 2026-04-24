@@ -8,30 +8,34 @@ import java.time.LocalDate;
 
 public class ClientePentaflow {
     public static void main(String[] args) {
-        Producto p = new Producto("PNT500", "Sensor Laser Industrial", 450.0, 10, "Pentacorp", LocalDate.now());
+        // Producto sugerido: Bomba Hidráulica
+        Producto p = new Producto("BOM005", "Bomba Centrifuga de Lodos 5HP", 12450.50, 3, "Pentaflow-Engineers", LocalDate.now());
 
         try (Socket s = new Socket("localhost", 5000); DataOutputStream out = new DataOutputStream(s.getOutputStream())) {
             
-            // 1. Enviar Cadena
-            byte[] c = p.aCadena().getBytes();
-            enviar(out, 1, c);
+            System.out.println(">>> ENVIANDO ACTIVOS AL MONITOR PENTAFLOW...");
 
-            // 2. Enviar Binario
-            byte[] b = p.aBinario();
-            enviar(out, 2, b);
+            // 1. Envío Cadena
+            byte[] cad = p.aCadena().getBytes();
+            enviarPaquete(out, 1, cad);
 
-            // 3. Enviar XML (desde archivo)
-            byte[] x = Files.readAllBytes(Paths.get("resources/esquemas/producto.xml"));
-            enviar(out, 3, x);
+            // 2. Envío Binario
+            byte[] bin = p.aBinario();
+            enviarPaquete(out, 2, bin);
 
-            System.out.println(">>> Todos los formatos Pentaflow enviados con éxito.");
+            // 3. Envío XML (Ejercicio 4)
+            byte[] xml = Files.readAllBytes(Paths.get("resources/esquemas/producto.xml"));
+            enviarPaquete(out, 3, xml);
+
+            System.out.println(">>> Procesos terminados.");
 
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    private static void enviar(DataOutputStream out, int tipo, byte[] d) throws IOException {
+    private static void enviarPaquete(DataOutputStream out, int tipo, byte[] datos) throws IOException {
         out.writeInt(tipo);
-        out.writeInt(d.length);
-        out.write(d);
+        out.writeInt(datos.length);
+        out.write(datos);
+        out.flush();
     }
 }
