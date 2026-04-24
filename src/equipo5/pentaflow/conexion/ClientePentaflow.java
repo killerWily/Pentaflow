@@ -1,42 +1,37 @@
 package equipo5.pentaflow.conexion;
 
 import equipo5.pentaflow.modelos.Producto;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.nio.file.*;
 import java.time.LocalDate;
 
 public class ClientePentaflow {
     public static void main(String[] args) {
-        String host = "localhost";
-        int puerto = 5000;
+        Producto p = new Producto("PNT500", "Sensor Laser Industrial", 450.0, 10, "Pentacorp", LocalDate.now());
 
-        // Crear una instancia de prueba
-        Producto prod = new Producto("MNT001", "Bomba Centrifuga 5HP", 12500.00, 2, "FlowServe", LocalDate.now());
+        try (Socket s = new Socket("localhost", 5000); DataOutputStream out = new DataOutputStream(s.getOutputStream())) {
+            
+            // 1. Enviar Cadena
+            byte[] c = p.aCadena().getBytes();
+            enviar(out, 1, c);
 
-        try (Socket socket = new Socket(host, puerto);
-             DataOutputStream salida = new DataOutputStream(socket.getOutputStream())) {
+            // 2. Enviar Binario
+            byte[] b = p.aBinario();
+            enviar(out, 2, b);
 
-            System.out.println("--- PENTAFLOW CLIENTE: INICIANDO ENVIO ---");
+            // 3. Enviar XML (desde archivo)
+            byte[] x = Files.readAllBytes(Paths.get("resources/esquemas/producto.xml"));
+            enviar(out, 3, x);
 
-            // 1. ENVIO EN FORMATO CADENA
-            byte[] datosCadena = prod.aFormatoCadena().getBytes();
-            salida.writeInt(1); // Indicador de tipo: 1 = Cadena
-            salida.writeInt(datosCadena.length);
-            salida.write(datosCadena);
-            System.out.println("Paquete cadena enviado (" + datosCadena.length + " bytes)");
+            System.out.println(">>> Todos los formatos Pentaflow enviados con éxito.");
 
-            // 2. ENVIO EN FORMATO BINARIO
-            byte[] datosBinarios = prod.aFormatoBinario();
-            salida.writeInt(2); // Indicador de tipo: 2 = Binario
-            salida.writeInt(datosBinarios.length);
-            salida.write(datosBinarios);
-            System.out.println("Paquete binario enviado (" + datosBinarios.length + " bytes)");
+        } catch (IOException e) { e.printStackTrace(); }
+    }
 
-            salida.flush();
-
-        } catch (IOException e) {
-            System.err.println("Error en la conexion: " + e.getMessage());
-        }
+    private static void enviar(DataOutputStream out, int tipo, byte[] d) throws IOException {
+        out.writeInt(tipo);
+        out.writeInt(d.length);
+        out.write(d);
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<producto>
+    <clave>MNT001</clave>
+    <nombre>Bomba Centrifuga 5HP</nombre>
+    <precio>12500.0</precio>
+    <cantidad>2</cantidad>
+    <marca>FlowServe</marca>
+    <fechaReg>2026-04-23</fechaReg>
+</producto>
